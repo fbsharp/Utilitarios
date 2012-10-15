@@ -27,15 +27,34 @@ namespace Concursos.Infra.NH
                         if (_sessionFactory == null)
                         {
 
-                            var cfg = Fluently.Configure()
+                            System.Runtime.Serialization.IFormatter serializer = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                            NHibernate.Cfg.Configuration cfg = null;
+                            string arquivoComCaminho = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration.serialized");
+
+                            if (File.Exists(arquivoComCaminho))
+                            {
+                                using (Stream stream = File.OpenRead(arquivoComCaminho))
+                                {
+                                    cfg = serializer.Deserialize(stream) as Configuration;
+                                }
+                            }
+                            else
+                            {
+
+                                cfg = Fluently.Configure()
                                     .Database(MsSqlConfiguration.MsSql2008
-                                    .ConnectionString(c => c.FromConnectionStringWithKey("Concursos")))
+                                    .ConnectionString(c => c.FromConnectionStringWithKey("Conexao")))
                                     .Mappings(m => m.FluentMappings.AddFromAssembly(Assembly.GetExecutingAssembly())
                                                                    .Conventions.AddFromAssemblyOf<ReferenceConvention>())
-                                //.ExposeConfiguration(BuildSchema)
+                                    //.ExposeConfiguration(BuildSchema)
                                     .ExposeConfiguration(p => p.SetProperty("current_session_context_class", "web"))
                                     .BuildConfiguration();
 
+                                using (Stream stream = File.OpenWrite(arquivoComCaminho))
+                                {
+                                    serializer.Serialize(stream, cfg);
+                                }
+                            }
 
 
                             _sessionFactory = cfg.BuildSessionFactory();
