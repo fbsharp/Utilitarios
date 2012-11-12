@@ -1,0 +1,11 @@
+<script type="text/javascript" language="javascript">
+    $("form").submit(function (e) {
+        if ($(this).valid()) {
+            $.post('@Url.Action("CriarDadosCadastrais")', $("#frmDadosCadastrais").serialize(), function (data) {
+                $("#conteudoPartialView").html(data);
+                $.validator.unobtrusive.parse($("#conteudoPartialView"));
+            });
+        }
+        e.preventDefault();
+    });
+</script>
